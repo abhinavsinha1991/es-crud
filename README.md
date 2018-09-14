@@ -13,13 +13,8 @@ Import this project as a Maven, and Building this project using maven goals (cle
 * 5 - Read Multiple,
 * 6 - Insert Multiple,
 * 7 - Search,
-* 8 - Search All,
-* 9 - Read Using Scroll,
-* 10 - Get Specifig Fields,
-* 11 - Must Query,
-* 12 - Should Query.
+* 8 - Search All and
+* 9 - Read Using Scroll.
 
 For Example: java -jar ESCrud-1.0.0.jar 1 3 (or) java -Xms250m -Xmx250m -jar ESCrud-1.0.0.jar 1 3
 
-# Author
-* Sundararajan ( <a href="https://twitter.com/sundar815" target="_blank">@sundar815</a> )

@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sundar.es.crud.utils;
+package com.marriot.poc.es.crud.utils;
 
 /**
  *
- * @author sundar
  */
 public interface ElasticSearchConstants {
 

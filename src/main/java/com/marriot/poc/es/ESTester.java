@@ -3,24 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sundar.es;
+package com.marriot.poc.es;
 
-import com.sundar.es.crud.ElasticSearchCrud;
-import com.sundar.es.crud.SearchAPIExample;
-import com.sundar.es.crud.impl.ElasticSearchCrudImpl;
-import com.sundar.es.crud.impl.SearchAPIExampleImpl;
-import com.sundar.es.crud.utils.ElasticSearchConstants;
-import org.apache.log4j.Logger;
+import com.marriot.poc.es.crud.ElasticSearchCrud;
+import com.marriot.poc.es.crud.SearchAPIExample;
+import com.marriot.poc.es.crud.impl.ElasticSearchCrudImpl;
+import com.marriot.poc.es.crud.impl.SearchAPIExampleImpl;
+import com.marriot.poc.es.crud.utils.ElasticSearchConstants;
+
+import java.util.Random;
+import java.util.logging.Logger;
+
 
 /**
- *
- * @author sundar
- * @since 2017-10-29
- * @modified 2017-10-29
  */
 public class ESTester {
 
-    private static final Logger log = Logger.getLogger(ESTester.class);
+    private static final Logger log = Logger.getLogger("ESTester");
 
     /**
      * This is constructor, validate the user given arguments
@@ -35,7 +34,8 @@ public class ESTester {
             }
         }
         if (valid) {
-            startProcess(args);
+            for (int i = 0; i < 10; i++)
+                startProcess(args);
         } else {
             log.info(ElasticSearchConstants.INVALID_MSG);
         }
@@ -65,7 +65,8 @@ public class ESTester {
                     case 2:
                         log.info("Write Process is started...");
                         log.info("--------------------------------------");
-                        esCRUD.CreateDocument();
+                        Random random = new Random();
+                        esCRUD.CreateDocument(String.valueOf(random.nextInt()));
                         break;
                     case 3:
                         log.info("Update Process is started...");
@@ -135,7 +136,8 @@ public class ESTester {
                 log.info("At least one argument, at most four argument is Required, (" + args.length + " given)");
             }
         } catch (Exception e) {
-            log.error("Exception occurred : " + e, e);
+            log.severe("Exception occurred : " + e);
+            e.printStackTrace();
         }
     }
 }

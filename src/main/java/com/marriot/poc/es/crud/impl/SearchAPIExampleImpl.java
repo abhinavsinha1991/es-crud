@@ -3,33 +3,32 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sundar.es.crud.impl;
+package com.marriot.poc.es.crud.impl;
 
-import com.sundar.es.crud.SearchAPIExample;
-import com.sundar.es.crud.utils.ElasticSearchClient;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.log4j.Logger;
+import com.marriot.poc.es.crud.SearchAPIExample;
+import com.marriot.poc.es.crud.utils.ElasticSearchClient;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 import org.elasticsearch.search.sort.SortOrder;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 /**
  *
- * @author sundar
- * @since 2017-11-01
- * @modified 2017-11-01
  */
 public class SearchAPIExampleImpl implements SearchAPIExample {
 
-    private static final Logger log = Logger.getLogger(SearchAPIExampleImpl.class);
+    private static final Logger log = Logger.getLogger("SearchAPIExampleImpl");
     private final ElasticSearchClient ESclient = null;
     private TransportClient client = null;
 
@@ -52,11 +51,12 @@ public class SearchAPIExampleImpl implements SearchAPIExample {
             do {
                 scrollResp.getHits().forEach(hit -> {
                     //Handle the hit...
-                    list.add(hit.getField("name").toString());
+                    list.add(hit.field("name").toString());
                 });
 
                 scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-            } while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
+            }
+            while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
             log.info("Search List : " + list);
         } catch (Exception ex) {
             log.info("Exception occurred while Scroll Document : " + ex);
@@ -78,10 +78,10 @@ public class SearchAPIExampleImpl implements SearchAPIExample {
                     .execute()
                     .actionGet();
             response.getHits().forEach(action -> {
-                log.info("Name : " + action.getField("name"));
+                log.info("Name : " + action.field("name"));
             });
         } catch (Exception ex) {
-            log.error("Exception occurred while Search All : " + ex, ex);
+            log.severe("Exception occurred while Search All : " + ex);
         }
     }
 
@@ -102,11 +102,11 @@ public class SearchAPIExampleImpl implements SearchAPIExample {
                     .actionGet();
             Map<String, Integer> stdMap = new HashMap<>();
             response.getHits().forEach(action -> {
-                stdMap.put(action.getField("name").toString(), Integer.parseInt(action.getField("age").toString()));
+                stdMap.put(action.field("name").toString(), Integer.parseInt(action.field("age").toString()));
             });
             log.info("std : " + stdMap);
         } catch (Exception ex) {
-            log.error("Exception occurred while get specific fields : " + ex, ex);
+            log.severe("Exception occurred while get specific fields : " + ex);
         }
     }
 
@@ -130,11 +130,11 @@ public class SearchAPIExampleImpl implements SearchAPIExample {
                     .actionGet();
             Map<String, Integer> stdMap = new HashMap<>();
             response.getHits().forEach(action -> {
-                stdMap.put(action.getField("name").toString(), Integer.parseInt(action.getField("age").toString()));
+                stdMap.put(action.field("name").toString(), Integer.parseInt(action.field("age").toString()));
             });
             log.info("std : " + stdMap);
         } catch (Exception ex) {
-            log.error("Exception occurred while run MUST Query : " + ex, ex);
+            log.severe("Exception occurred while run MUST Query : " + ex);
         }
     }
 
@@ -158,11 +158,11 @@ public class SearchAPIExampleImpl implements SearchAPIExample {
                     .actionGet();
             Map<String, Integer> stdMap = new HashMap<>();
             response.getHits().forEach(action -> {
-                stdMap.put(action.getField("name").toString(), Integer.parseInt(action.getField("age").toString()));
+                stdMap.put(action.field("name").toString(), Integer.parseInt(action.field("age").toString()));
             });
             log.info("std : " + stdMap);
         } catch (Exception ex) {
-            log.error("Exception occurred while run MUST Query : " + ex, ex);
+            log.severe("Exception occurred while run MUST Query : " + ex);
         }
     }
 

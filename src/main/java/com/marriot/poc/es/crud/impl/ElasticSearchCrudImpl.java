@@ -3,40 +3,45 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sundar.es.crud.impl;
+package com.marriot.poc.es.crud.impl;
 
-import com.sundar.es.crud.ElasticSearchCrud;
-import com.sundar.es.crud.utils.ElasticSearchClient;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import org.apache.log4j.Logger;
+import com.marriot.poc.es.crud.ElasticSearchCrud;
+import com.marriot.poc.es.crud.utils.ElasticSearchClient;
+import org.elasticsearch.action.admin.indices.alias.Alias;
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import org.elasticsearch.index.get.GetField;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.common.document.DocumentField;
+import org.elasticsearch.common.unit.ByteSizeUnit;
+import org.elasticsearch.common.unit.ByteSizeValue;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHits;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
 /**
- *
- * @author sundar
- * @since 2017-10-29
- * @modified 2017-11-09
  */
 public class ElasticSearchCrudImpl implements ElasticSearchCrud {
 
-    private static final Logger log = Logger.getLogger(ElasticSearchCrudImpl.class);
+    private static final Logger log = Logger.getLogger("ElasticSearchCrudImpl");
     private ElasticSearchClient ESclient = null;
     private TransportClient client = null;
 
@@ -48,16 +53,42 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
      * This method Create the Index and insert the document(s)
      */
     @Override
-    public void CreateDocument() {
+    public void CreateDocument(String id) {
 
         try {
             client = ESclient.getInstant();
-            IndexResponse response = client.prepareIndex("school", "tenth", "1")
+
+            if (!client.admin().indices().aliasesExist(new GetAliasesRequest().aliases("school")).actionGet().isExists()) {
+                System.out.println("Creating alias");
+
+                client.admin().indices().create(new CreateIndexRequest().alias(new Alias("school")).index("school-000001")).actionGet();
+
+                /*RestHighLevelClient restHighLevelClient = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
+
+                RolloverRequest rolloverRequest = new RolloverRequest("school", "school-000002");
+
+                rolloverRequest.addMaxIndexAgeCondition(new TimeValue(5, TimeUnit.SECONDS));
+                rolloverRequest.addMaxIndexDocsCondition(3);
+                rolloverRequest.addMaxIndexSizeCondition(new ByteSizeValue(100, ByteSizeUnit.KB));
+                //rolloverRequest.getCreateIndexRequest().alias(new Alias("school"));
+
+                restHighLevelClient.indices().rollover(rolloverRequest, RequestOptions.DEFAULT);*/
+
+            }
+
+            client.admin().indices().prepareRolloverIndex("school")
+                    .addMaxIndexAgeCondition(new TimeValue(5, TimeUnit.SECONDS))
+                    .addMaxIndexDocsCondition(3)
+                    .addMaxIndexSizeCondition(new ByteSizeValue(5, ByteSizeUnit.KB))
+                    .get();
+
+            IndexResponse response = client.prepareIndex("school", "tenth", id)
                     .setSource(jsonBuilder()
                             .startObject()
                             .field("name", "Sundar")
                             .endObject()
                     ).get();
+
             if (response != null) {
                 String _index = response.getIndex();
                 String _type = response.getType();
@@ -67,7 +98,7 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
                 log.info("Index has been created successfully with Index: " + _index + " / Type: " + _type + "ID: " + _id);
             }
         } catch (IOException ex) {
-            log.error("Exception occurred while Insert Index : " + ex, ex);
+            log.severe("Exception occurred while Insert Index : " + ex);
         }
     }
 
@@ -79,14 +110,13 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
         try {
             client = ESclient.getInstant();
             GetResponse response = client.prepareGet("school", "tenth", "1")
-                    .setOperationThreaded(false)
                     .get();
             if (response != null) {
-                Map<String, GetField> FieldsMap = response.getFields();
+                Map<String, DocumentField> FieldsMap = response.getFields();
                 log.info("Response Data : " + FieldsMap.toString());
             }
         } catch (Exception ex) {
-            log.error("Exception occurred while get Document : " + ex, ex);
+            log.severe("Exception occurred while get Document : " + ex);
         }
     }
 
@@ -106,7 +136,7 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
                 log.info("Document has been deleted...");
             }
         } catch (Exception ex) {
-            log.error("Exception occurred while delete Document : " + ex, ex);
+            log.severe("Exception occurred while delete Document : " + ex);
         }
     }
 
@@ -128,7 +158,7 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
                 log.info("Index has been updated successfully...");
             }
         } catch (IOException | InterruptedException | ExecutionException ex) {
-            log.error("Exception occurred while update Document : " + ex, ex);
+            log.severe("Exception occurred while update Document : " + ex);
         }
     }
 
@@ -153,7 +183,7 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
                 }
             });
         } catch (Exception ex) {
-            log.error("Exception occurred while get Multiple Document : " + ex, ex);
+            log.severe("Exception occurred while get Multiple Document : " + ex);
         }
     }
 
@@ -194,7 +224,7 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
             }
 
         } catch (IOException ex) {
-            log.error("Exception occurred while get Multiple Document : " + ex, ex);
+            log.severe("Exception occurred while get Multiple Document : " + ex);
         }
     }
 
@@ -224,7 +254,7 @@ public class ElasticSearchCrudImpl implements ElasticSearchCrud {
                 }
             }
         } catch (Exception ex) {
-            log.error("Excption occurred while Search Document : " + ex);
+            log.severe("Excption occurred while Search Document : " + ex);
         }
     }
 }
